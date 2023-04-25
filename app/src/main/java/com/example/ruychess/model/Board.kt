@@ -68,8 +68,3 @@ private val initialPieces = Pieces(
         Position(File.h, Rank.eight) to Rook(PieceColor.Dark),
     )
 )
-
-fun main() {
-    val board = Board()
-
-}

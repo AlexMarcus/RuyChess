@@ -19,28 +19,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ruychess.ChessViewModel
 import com.example.ruychess.model.Board
 import com.example.ruychess.model.Position
 import com.example.ruychess.model.pieces.Piece
 import com.example.ruychess.toModifier
 import com.example.ruychess.ui.theme.RuyChessTheme
 
-private const val COLUMNS = 8
-private const val ROWS = 8
-
-//val positionList: List<Position> by lazy {
-//    val list = mutableListOf<Position>()
-//    for (file in File.values()) {
-//        for (rank in Rank.values()) {
-//            list.add(Position(file, rank))
-//        }
-//    }
-//    list
-//}
-
 @Composable
 fun ChessBoard(
     board: Board,
+    viewModel: ChessViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(
