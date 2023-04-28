@@ -1,7 +1,10 @@
 package com.example.ruychess.model.pieces
 
-interface Piece {
-    val asset: Int
+abstract class Piece {
+    abstract val asset: Int
 
-    val color: PieceColor
+    abstract val color: PieceColor
+
+    override fun toString(): String =
+        "$color ${this.javaClass.simpleName}"
 }

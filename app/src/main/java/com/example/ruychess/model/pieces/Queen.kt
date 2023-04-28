@@ -2,7 +2,7 @@ package com.example.ruychess.model.pieces
 
 import com.example.ruychess.R
 
-class Queen(override val color: PieceColor) : Piece {
+class Queen(override val color: PieceColor) : Piece() {
 
     override val asset: Int
         get() = when (color) {

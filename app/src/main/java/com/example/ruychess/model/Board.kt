@@ -4,12 +4,13 @@ import com.example.ruychess.model.pieces.Bishop
 import com.example.ruychess.model.pieces.King
 import com.example.ruychess.model.pieces.Knight
 import com.example.ruychess.model.pieces.Pawn
+import com.example.ruychess.model.pieces.Piece
 import com.example.ruychess.model.pieces.PieceColor
 import com.example.ruychess.model.pieces.Pieces
 import com.example.ruychess.model.pieces.Queen
 import com.example.ruychess.model.pieces.Rook
 
-class Board(
+data class Board(
     val pieces: Pieces = initialPieces
 ) {
     val squares: List<Square>
@@ -29,6 +30,9 @@ class Board(
         }
         return squareList
     }
+
+    fun findPiece(position: Position): Piece? =
+        squares.firstOrNull { it.position == position }?.piece
 }
 
 private val initialPieces = Pieces(

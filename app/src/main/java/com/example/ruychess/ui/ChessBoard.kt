@@ -1,6 +1,12 @@
 package com.example.ruychess.ui
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
@@ -11,6 +17,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ruychess.ChessViewModel
 import com.example.ruychess.model.Board
 import com.example.ruychess.model.Position
+import com.example.ruychess.model.Square
 import com.example.ruychess.model.pieces.Piece
 import com.example.ruychess.toModifier
 import com.example.ruychess.ui.theme.RuyChessTheme
@@ -33,38 +44,90 @@ fun ChessBoard(
     viewModel: ChessViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
+    println("recomposing board")
+
+    val state by viewModel.gameState.collectAsState()
+
+    //println(state.clickedPosition)
+    val positionClickEvent = remember(viewModel) {
+        object : UiEvent<Position> {
+            override fun onClick(clickedItem: Position) {
+                viewModel.onClick(clickedItem)
+            }
+        }
+    }
+
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f)
     ) {
 
-        val squareWidth = maxWidth / 8
-        board.squares.forEach {
-            Square(
-                size = squareWidth,
-                position = it.position,
-                modifier = it.position
-                    .toOffset(squareWidth)
-                    .toModifier()
+        println("Recomposing Box")
+
+        val squareSize = maxWidth / 8
+        state.curBoard.squares.forEach { square ->
+            DecoratedSquare(
+                square = square,
+                squareSize = squareSize,
+                clickedPosition = state.clickedPosition,
+                uiEvent = positionClickEvent
             )
-            if (it.piece != null) {
-                Piece(
-                    piece = it.piece,
-                    squareSize = squareWidth,
-                    modifier = it.position
-                        .toOffset(squareWidth)
-                        .toModifier()
-                )
+        }
+        state.curBoard.pieces.forEach { (position, piece) ->
+            key(piece) {
+                println("Recomposing HERE")
+                AnimatedPiece(position, piece, squareSize)
             }
         }
     }
 }
 
 @Composable
+fun AnimatedPiece(
+    position: Position,
+    piece: Piece,
+    squareSize: Dp
+) {
+    println("Recomposing AnimatedPiece $piece")
+
+    val offset by animateOffsetAsState(
+        targetValue = position.toOffset(squareSize),
+        animationSpec = tween(5000, easing = LinearEasing)
+    )
+    Piece(piece = piece, squareSize = squareSize, modifier = offset.toModifier())
+
+}
+
+@Composable
+fun DecoratedSquare(
+    square: Square,
+    squareSize: Dp,
+    clickedPosition: Position?,
+    uiEvent: UiEvent<Position>,
+    modifier: Modifier = Modifier
+) {
+
+    println("Recomposing $square")
+
+    Square(
+        size = squareSize,
+        position = square.position,
+        clickedPosition = clickedPosition,
+        modifier = square.position
+            .toOffset(squareSize)
+            .toModifier()
+            .clickable {
+                uiEvent.onClick(square.position)
+            }
+    )
+}
+
+@Composable
 fun Square(
     size: Dp,
     position: Position,
+    clickedPosition: Position?,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -91,6 +154,14 @@ fun Square(
                 fontSize = 12.sp,
                 color = MaterialTheme.colors.onPrimary,
                 modifier = Modifier.align(Alignment.TopStart)
+            )
+        }
+
+        if (clickedPosition == position) {
+            Canvas(Modifier.size(500.dp),
+                onDraw = {
+                    drawCircle(color = Color.Red)
+                }
             )
         }
     }
@@ -154,6 +225,7 @@ fun Piece(
     squareSize: Dp,
     modifier: Modifier = Modifier
 ) {
+    println("Recomposing: $piece")
     Box(
         modifier = modifier
             .size(squareSize, squareSize),
