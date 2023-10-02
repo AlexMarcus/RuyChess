@@ -1,6 +1,5 @@
 package com.example.ruychess.ui
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
@@ -10,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -35,7 +37,10 @@ import com.example.ruychess.model.Board
 import com.example.ruychess.model.Position
 import com.example.ruychess.model.Square
 import com.example.ruychess.model.pieces.Piece
+import com.example.ruychess.model.pieces.Pieces
 import com.example.ruychess.toModifier
+import com.example.ruychess.ui.theme.DarkSquareColor
+import com.example.ruychess.ui.theme.LightSquareColor
 import com.example.ruychess.ui.theme.RuyChessTheme
 
 @Composable
@@ -62,23 +67,29 @@ fun ChessBoard(
             .fillMaxWidth()
             .aspectRatio(1f)
     ) {
-
-        println("Recomposing Box")
-
         val squareSize = maxWidth / 8
         state.curBoard.squares.forEach { square ->
             DecoratedSquare(
                 square = square,
                 squareSize = squareSize,
+                isHighlighted = square.position in state.highlightedPositions,
+                isCapture = square.position in state.capturePositions,
                 clickedPosition = state.clickedPosition,
                 uiEvent = positionClickEvent
             )
         }
-        state.curBoard.pieces.forEach { (position, piece) ->
-            key(piece) {
-                println("Recomposing HERE")
-                AnimatedPiece(position, piece, squareSize)
-            }
+        Pieces(state.curBoard.pieces, squareSize)
+    }
+}
+
+@Composable
+fun Pieces(
+    pieces: Pieces,
+    squareSize: Dp
+) {
+    pieces.forEach { (position, piece) ->
+        key(piece) {
+            AnimatedPiece(position, piece, squareSize)
         }
     }
 }
@@ -89,14 +100,11 @@ fun AnimatedPiece(
     piece: Piece,
     squareSize: Dp
 ) {
-    println("Recomposing AnimatedPiece $piece")
-
     val offset by animateOffsetAsState(
         targetValue = position.toOffset(squareSize),
-        animationSpec = tween(5000, easing = LinearEasing)
+        animationSpec = tween(1000, easing = LinearEasing)
     )
     Piece(piece = piece, squareSize = squareSize, modifier = offset.toModifier())
-
 }
 
 @Composable
@@ -104,15 +112,16 @@ fun DecoratedSquare(
     square: Square,
     squareSize: Dp,
     clickedPosition: Position?,
+    isHighlighted: Boolean,
+    isCapture: Boolean,
     uiEvent: UiEvent<Position>,
     modifier: Modifier = Modifier
 ) {
-
-    println("Recomposing $square")
-
     Square(
         size = squareSize,
         position = square.position,
+        isHighlighted = isHighlighted,
+        isCapture = isCapture,
         clickedPosition = clickedPosition,
         modifier = square.position
             .toOffset(squareSize)
@@ -127,17 +136,15 @@ fun DecoratedSquare(
 fun Square(
     size: Dp,
     position: Position,
+    isHighlighted: Boolean,
+    isCapture: Boolean,
     clickedPosition: Position?,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .size(size)
-            .background(
-                if (position.isLight()) MaterialTheme.colors.primary
-                else MaterialTheme.colors.secondary
-            )
-            .padding(2.dp)
+            .background(if (position.isLight()) LightSquareColor else DarkSquareColor)
     ) {
         if (position.rank.ordinal == 0) {
             Text(
@@ -146,6 +153,7 @@ fun Square(
                 color = MaterialTheme.colors.onPrimary,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
+                    .padding(2.dp)
             )
         }
         if (position.file.ordinal == 0) {
@@ -153,20 +161,83 @@ fun Square(
                 text = "${position.rank}",
                 fontSize = 12.sp,
                 color = MaterialTheme.colors.onPrimary,
-                modifier = Modifier.align(Alignment.TopStart)
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(2.dp)
             )
         }
 
         if (clickedPosition == position) {
-            Canvas(Modifier.size(500.dp),
+            Canvas(Modifier.fillMaxSize(),
                 onDraw = {
-                    drawCircle(color = Color.Red)
+                    drawRect(
+                        color = Color.LightGray,
+                        alpha = 0.55f
+                    )
+                }
+            )
+        }
+
+        if (isHighlighted) {
+            Canvas(
+                Modifier
+                    .fillMaxSize(0.4f)
+                    .align(Alignment.Center),
+                onDraw = {
+                    drawCircle(
+                        color = Color.LightGray,
+                        alpha = 0.65f
+                    )
+                }
+            )
+        }
+
+        if (isCapture) {
+            Canvas(
+                Modifier
+                    .fillMaxSize(0.8f)
+                    .align(Alignment.Center),
+                onDraw = {
+                    drawCircle(
+                        color = Color.LightGray,
+                        alpha = 0.65f,
+                        style = Stroke(this.size.minDimension / 8f)
+                    )
                 }
             )
         }
     }
 }
 
+@Composable
+fun Piece(
+    piece: Piece,
+    squareSize: Dp,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(squareSize, squareSize),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = piece.asset),
+            contentDescription = piece::class.java.simpleName,
+            tint = Color.Unspecified
+        )
+    }
+}
+
+
+@Preview
+@Composable
+fun BoardPreview() {
+    RuyChessTheme {
+        ChessBoard(
+            Board()
+        )
+    }
+}
 
 /*
  * Draggable piece
@@ -218,34 +289,3 @@ fun Square(
 
 
 * */
-
-@Composable
-fun Piece(
-    piece: Piece,
-    squareSize: Dp,
-    modifier: Modifier = Modifier
-) {
-    println("Recomposing: $piece")
-    Box(
-        modifier = modifier
-            .size(squareSize, squareSize),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            painter = painterResource(id = piece.asset),
-            contentDescription = piece::class.java.simpleName,
-            tint = Color.Unspecified
-        )
-    }
-}
-
-
-@Preview
-@Composable
-fun BoardPreview() {
-    RuyChessTheme {
-        ChessBoard(
-            Board()
-        )
-    }
-}

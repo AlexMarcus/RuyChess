@@ -1,8 +1,10 @@
 package com.example.ruychess.model.pieces
 
+import androidx.compose.runtime.Immutable
 import com.example.ruychess.model.Position
 
-class Pieces(
+@Immutable
+data class Pieces(
     val pieces: Map<Position, Piece>
 ) : Iterable<Map.Entry<Position, Piece>>{
     operator fun get(position: Position): Piece? =

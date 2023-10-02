@@ -17,7 +17,6 @@ data class Board(
 
     init {
         squares = createSquares()
-        println(squares)
     }
 
     private fun createSquares(): List<Square> {
@@ -33,6 +32,9 @@ data class Board(
 
     fun findPiece(position: Position): Piece? =
         squares.firstOrNull { it.position == position }?.piece
+
+    fun findPosition(piece: Piece): Position? =
+        squares.firstOrNull { it.piece == piece }?.position
 }
 
 private val initialPieces = Pieces(
@@ -45,23 +47,23 @@ private val initialPieces = Pieces(
         Position(File.f, Rank.one) to Bishop(PieceColor.Light),
         Position(File.g, Rank.one) to Knight(PieceColor.Light),
         Position(File.h, Rank.one) to Rook(PieceColor.Light),
-        Position(File.a, Rank.two) to Pawn(PieceColor.Light),
-        Position(File.b, Rank.two) to Pawn(PieceColor.Light),
-        Position(File.c, Rank.two) to Pawn(PieceColor.Light),
-        Position(File.d, Rank.two) to Pawn(PieceColor.Light),
-        Position(File.e, Rank.two) to Pawn(PieceColor.Light),
-        Position(File.f, Rank.two) to Pawn(PieceColor.Light),
-        Position(File.g, Rank.two) to Pawn(PieceColor.Light),
-        Position(File.h, Rank.two) to Pawn(PieceColor.Light),
+//        Position(File.a, Rank.two) to Pawn(PieceColor.Light),
+//        Position(File.b, Rank.two) to Pawn(PieceColor.Light),
+//        Position(File.c, Rank.two) to Pawn(PieceColor.Light),
+//        Position(File.d, Rank.two) to Pawn(PieceColor.Light),
+//        Position(File.e, Rank.two) to Pawn(PieceColor.Light),
+//        Position(File.f, Rank.two) to Pawn(PieceColor.Light),
+//        Position(File.g, Rank.two) to Pawn(PieceColor.Light),
+//        Position(File.h, Rank.two) to Pawn(PieceColor.Light),
 
-        Position(File.a, Rank.seven) to Pawn(PieceColor.Dark),
-        Position(File.b, Rank.seven) to Pawn(PieceColor.Dark),
-        Position(File.c, Rank.seven) to Pawn(PieceColor.Dark),
-        Position(File.d, Rank.seven) to Pawn(PieceColor.Dark),
-        Position(File.e, Rank.seven) to Pawn(PieceColor.Dark),
-        Position(File.f, Rank.seven) to Pawn(PieceColor.Dark),
-        Position(File.g, Rank.seven) to Pawn(PieceColor.Dark),
-        Position(File.h, Rank.seven) to Pawn(PieceColor.Dark),
+//        Position(File.a, Rank.seven) to Pawn(PieceColor.Dark),
+//        Position(File.b, Rank.seven) to Pawn(PieceColor.Dark),
+//        Position(File.c, Rank.seven) to Pawn(PieceColor.Dark),
+//        Position(File.d, Rank.seven) to Pawn(PieceColor.Dark),
+//        Position(File.e, Rank.seven) to Pawn(PieceColor.Dark),
+//        Position(File.f, Rank.seven) to Pawn(PieceColor.Dark),
+//        Position(File.g, Rank.seven) to Pawn(PieceColor.Dark),
+//        Position(File.h, Rank.seven) to Pawn(PieceColor.Dark),
         Position(File.a, Rank.eight) to Rook(PieceColor.Dark),
         Position(File.b, Rank.eight) to Knight(PieceColor.Dark),
         Position(File.c, Rank.eight) to Bishop(PieceColor.Dark),
