@@ -25,25 +25,34 @@ data class Position(
         (7 - rank.ordinal) * squareSize.value
     )
 
-    fun positionByOffset(x: Float, y: Float, squareSize: Dp): Position? {
-        val offset = this.toOffset(squareSize)
-        println(offset)
-        println("x=$x, y=$y, sqsize=${squareSize.value}")
-        val newX = offset.x.roundToInt() + x
-        val newY = offset.y.roundToInt() + y
-        println("newx=${(newX / squareSize.value).roundToInt()}, newy = ${(newY / squareSize.value).roundToInt()}")
+    fun positionByOffset(fileDelta: Int, rankDelta: Int): Position? {
+        val newFile = this.file + fileDelta
+        val newRank = this.rank + rankDelta
 
-        //val newOffset = IntOffset(newX, newY)
+        if (newFile == null || newRank == null) return null
 
-        return try {
-            Position(
-                File.values()[(newX / squareSize.value).roundToInt()],
-                Rank.values()[((newY / squareSize.value) - 7).roundToInt().absoluteValue]
-            )
-        } catch (ex: ArrayIndexOutOfBoundsException) {
-            null
-        }
+        return Position(newFile, newRank)
     }
+
+//    fun positionByOffset(x: Float, y: Float, squareSize: Dp): Position? {
+//        val offset = this.toOffset(squareSize)
+//        println(offset)
+//        println("x=$x, y=$y, sqsize=${squareSize.value}")
+//        val newX = offset.x.roundToInt() + x
+//        val newY = offset.y.roundToInt() + y
+//        println("newx=${(newX / squareSize.value).roundToInt()}, newy = ${(newY / squareSize.value).roundToInt()}")
+//
+//        //val newOffset = IntOffset(newX, newY)
+//
+//        return try {
+//            Position(
+//                File.values()[(newX / squareSize.value).roundToInt()],
+//                Rank.values()[((newY / squareSize.value) - 7).roundToInt().absoluteValue]
+//            )
+//        } catch (ex: ArrayIndexOutOfBoundsException) {
+//            null
+//        }
+//    }
 
     override fun toString(): String {
         return "${file}${rank.intRep}"

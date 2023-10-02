@@ -36,21 +36,18 @@ abstract class LinePiece(private val directions: Array<IntArray>) : Piece() {
                             else -> 0
                         }
 
-                        var curFile: File? = position.file + fileDelta
-                        var curRank: Rank? = position.rank + rankDelta
-                        while ( curFile != null && curRank != null ) {
-                            val newPos = Position(curFile, curRank)
-                            val pieceAtSquare = board.findPiece(newPos)
+                        var newPosition = position.positionByOffset(fileDelta, rankDelta)
+                        while ( newPosition != null ) {
+                            val pieceAtSquare = board.findPiece(newPosition)
                             if( pieceAtSquare != null ) {
                                 if (pieceAtSquare.color != this.color ) {
-                                    moves += Move(position, newPos, MoveType.Capture)
+                                    moves += Move(position, newPosition, MoveType.Capture)
                                 }
                                 break
                             }
-                            moves += Move(position, newPos)
+                            moves += Move(position, newPosition)
 
-                            curFile += fileDelta
-                            curRank += rankDelta
+                            newPosition = newPosition.positionByOffset(fileDelta, rankDelta)
                         }
                     }
                 }

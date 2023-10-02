@@ -31,19 +31,24 @@ class ChessViewModel @Inject constructor() : ViewModel() {
                         capturePositions = listOf()
                     )
                 }
+
                 null -> {
+
+                    val possibleMoves =
+                        state.curBoard.findPiece(position)
+                            ?.possibleMoves(state.curBoard)
+
                     _gameState.value = state.copy(
                         clickedPosition = position,
-                        highlightedPositions = state.curBoard.findPiece(position)
-                            ?.possibleMoves(state.curBoard)
+                        highlightedPositions = possibleMoves
                             ?.toMovePositions()
                             ?: listOf(),
-                        capturePositions = state.curBoard.findPiece(position)
-                            ?.possibleMoves(state.curBoard)
+                        capturePositions = possibleMoves
                             ?.toCapturePositions()
                             ?: listOf()
                     )
                 }
+
                 else -> {
                     val pieceToMove = state.curBoard.findPiece(state.clickedPosition) ?: return
                     if (position in pieceToMove.possibleMoves(state.curBoard).toTargetPositions()) {
