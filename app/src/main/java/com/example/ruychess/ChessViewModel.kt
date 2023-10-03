@@ -2,8 +2,10 @@ package com.example.ruychess
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.example.ruychess.model.Board
 import com.example.ruychess.model.Position
 import com.example.ruychess.model.pieces.Pawn
+import com.example.ruychess.model.pieces.Piece
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,61 +23,62 @@ class ChessViewModel @Inject constructor() : ViewModel() {
             javaClass.simpleName,
             "onPieceClick: position = [$position], clickedPosition = [${_gameState.value.clickedPosition}]"
         )
-        _gameState.value.let { state ->
+        _gameState.value.let { prevState ->
 
-            when (state.clickedPosition) {
-                position -> {
-                    _gameState.value = state.copy(
+            if (prevState.clickedPosition == null) {
+                val piece = prevState.curBoard.findPiece(position) ?: return
+
+                _gameState.value =
+                    updateStateWithNewPieceSelected(piece, position, prevState.curBoard)
+            } else {
+                val pieceToMove = prevState.curBoard.findPiece(prevState.clickedPosition) ?: return
+                if (position in pieceToMove.possibleMoves(prevState.curBoard).toTargetPositions()) {
+
+                    val currentBoard = prevState.curBoard.copy()
+                    val nextBoard = prevState.curBoard.copy(
+                        pieces = prevState.curBoard.pieces
+                            .minus(prevState.clickedPosition)
+                            .plus(
+                                position to pieceToMove.apply {
+                                    if (this is Pawn) hasMoved = true
+                                }
+                            )
+                    )
+                    _gameState.value = prevState.copy(
                         clickedPosition = null,
+                        prevBoard = currentBoard,
+                        curBoard = nextBoard,
                         highlightedPositions = listOf(),
                         capturePositions = listOf()
                     )
-                }
+                } else {
+                    val piece = prevState.curBoard.findPiece(position)
+                    _gameState.value = when (piece) {
+                        prevState.curBoard.findPiece(prevState.clickedPosition), null ->
+                            _gameState.value.copy(
+                                clickedPosition = null,
+                                highlightedPositions = listOf(),
+                                capturePositions = listOf()
+                            )
 
-                null -> {
-
-                    val possibleMoves =
-                        state.curBoard.findPiece(position)
-                            ?.possibleMoves(state.curBoard)
-
-                    _gameState.value = state.copy(
-                        clickedPosition = position,
-                        highlightedPositions = possibleMoves
-                            ?.toMovePositions()
-                            ?: listOf(),
-                        capturePositions = possibleMoves
-                            ?.toCapturePositions()
-                            ?: listOf()
-                    )
-                }
-
-                else -> {
-                    val pieceToMove = state.curBoard.findPiece(state.clickedPosition) ?: return
-                    if (position in pieceToMove.possibleMoves(state.curBoard).toTargetPositions()) {
-
-
-                        val currentBoard = state.curBoard.copy()
-                        val nextBoard = state.curBoard.copy(
-                            pieces = state.curBoard.pieces
-                                .minus(state.clickedPosition)
-                                .plus(
-                                    position to pieceToMove.apply {
-                                        if (this is Pawn) hasMoved = true
-                                    }
-                                )
-                        )
-                        _gameState.value = state.copy(
-                            clickedPosition = null,
-                            prevBoard = currentBoard,
-                            curBoard = nextBoard,
-                            highlightedPositions = listOf(),
-                            capturePositions = listOf()
+                        else -> updateStateWithNewPieceSelected(
+                            piece, position, prevState.curBoard
                         )
                     }
                 }
-
             }
         }
     }
 
+    private fun updateStateWithNewPieceSelected(
+        piece: Piece, position: Position, board: Board
+    ): GameState {
+        val possibleMoves = piece.possibleMoves(board)
+
+        return _gameState.value.copy(
+            clickedPosition = position,
+            highlightedPositions = possibleMoves.toMovePositions(),
+            capturePositions = possibleMoves.toCapturePositions()
+        )
+    }
 }

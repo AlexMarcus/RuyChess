@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
@@ -102,7 +103,7 @@ fun AnimatedPiece(
 ) {
     val offset by animateOffsetAsState(
         targetValue = position.toOffset(squareSize),
-        animationSpec = tween(1000, easing = LinearEasing)
+        animationSpec = tween(200, easing = LinearEasing)
     )
     Piece(piece = piece, squareSize = squareSize, modifier = offset.toModifier())
 }
@@ -126,7 +127,10 @@ fun DecoratedSquare(
         modifier = square.position
             .toOffset(squareSize)
             .toModifier()
-            .clickable {
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
                 uiEvent.onClick(square.position)
             }
     )

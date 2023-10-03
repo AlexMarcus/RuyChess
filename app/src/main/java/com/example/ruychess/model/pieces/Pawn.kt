@@ -36,10 +36,9 @@ class Pawn(override val color: PieceColor) : Piece() {
 
             if (pieceFront == null && frontPosition != null) {
                 moves.add(Move(position, frontPosition, MoveType.Move))
-            }
-
-            if (!hasMoved && piece2Front == null && front2Position != null) {
-                moves.add(Move(position, front2Position, MoveType.Move))
+                if (!hasMoved && piece2Front == null && front2Position != null) {
+                    moves.add(Move(position, front2Position, MoveType.Move))
+                }
             }
 
             for (piece in diagPieces) {
@@ -50,8 +49,8 @@ class Pawn(override val color: PieceColor) : Piece() {
                     }
                 }
             }
-
         }
+
         return moves.toList()
     }
 }

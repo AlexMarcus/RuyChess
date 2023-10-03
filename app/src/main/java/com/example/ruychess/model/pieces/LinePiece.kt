@@ -21,15 +21,15 @@ abstract class LinePiece(private val directions: Array<IntArray>) : Piece() {
         board.findPosition(this)?.let { position ->
             for (i in directions.indices) {
                 for (j in directions[0].indices) {
-                    if(directions[i][j] == 1) {
-                        val rankDelta = when(i) {
+                    if (directions[i][j] == 1) {
+                        val rankDelta = when (i) {
                             0 -> 1
                             1 -> 0
                             2 -> -1
                             else -> 0
                         }
 
-                        val fileDelta = when(j) {
+                        val fileDelta = when (j) {
                             0 -> -1
                             1 -> 0
                             2 -> 1
@@ -37,10 +37,10 @@ abstract class LinePiece(private val directions: Array<IntArray>) : Piece() {
                         }
 
                         var newPosition = position.positionByOffset(fileDelta, rankDelta)
-                        while ( newPosition != null ) {
+                        while (newPosition != null) {
                             val pieceAtSquare = board.findPiece(newPosition)
-                            if( pieceAtSquare != null ) {
-                                if (pieceAtSquare.color != this.color ) {
+                            if (pieceAtSquare != null) {
+                                if (pieceAtSquare.color != this.color) {
                                     moves += Move(position, newPosition, MoveType.Capture)
                                 }
                                 break
