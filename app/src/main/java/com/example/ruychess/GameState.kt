@@ -8,5 +8,5 @@ data class GameState(
     val curBoard: Board = Board(),
     val highlightedPositions: List<Position> = listOf(),
     val capturePositions: List<Position> = listOf(),
-    val clickedPosition: Position? = null
+    val selectedPosition: Position? = null
 )

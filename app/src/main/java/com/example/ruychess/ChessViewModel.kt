@@ -21,23 +21,23 @@ class ChessViewModel @Inject constructor() : ViewModel() {
     fun onClick(position: Position) {
         Log.d(
             javaClass.simpleName,
-            "onPieceClick: position = [$position], clickedPosition = [${_gameState.value.clickedPosition}]"
+            "onPieceClick: position = [$position], clickedPosition = [${_gameState.value.selectedPosition}]"
         )
         _gameState.value.let { prevState ->
 
-            if (prevState.clickedPosition == null) {
+            if (prevState.selectedPosition == null) {
                 val piece = prevState.curBoard.findPiece(position) ?: return
 
                 _gameState.value =
                     updateStateWithNewPieceSelected(piece, position, prevState.curBoard)
             } else {
-                val pieceToMove = prevState.curBoard.findPiece(prevState.clickedPosition) ?: return
+                val pieceToMove = prevState.curBoard.findPiece(prevState.selectedPosition) ?: return
                 if (position in pieceToMove.possibleMoves(prevState.curBoard).toTargetPositions()) {
 
                     val currentBoard = prevState.curBoard.copy()
                     val nextBoard = prevState.curBoard.copy(
                         pieces = prevState.curBoard.pieces
-                            .minus(prevState.clickedPosition)
+                            .minus(prevState.selectedPosition)
                             .plus(
                                 position to pieceToMove.apply {
                                     if (this is Pawn) hasMoved = true
@@ -45,7 +45,7 @@ class ChessViewModel @Inject constructor() : ViewModel() {
                             )
                     )
                     _gameState.value = prevState.copy(
-                        clickedPosition = null,
+                        selectedPosition = null,
                         prevBoard = currentBoard,
                         curBoard = nextBoard,
                         highlightedPositions = listOf(),
@@ -54,9 +54,9 @@ class ChessViewModel @Inject constructor() : ViewModel() {
                 } else {
                     val piece = prevState.curBoard.findPiece(position)
                     _gameState.value = when (piece) {
-                        prevState.curBoard.findPiece(prevState.clickedPosition), null ->
+                        prevState.curBoard.findPiece(prevState.selectedPosition), null ->
                             _gameState.value.copy(
-                                clickedPosition = null,
+                                selectedPosition = null,
                                 highlightedPositions = listOf(),
                                 capturePositions = listOf()
                             )
@@ -76,7 +76,7 @@ class ChessViewModel @Inject constructor() : ViewModel() {
         val possibleMoves = piece.possibleMoves(board)
 
         return _gameState.value.copy(
-            clickedPosition = position,
+            selectedPosition = position,
             highlightedPositions = possibleMoves.toMovePositions(),
             capturePositions = possibleMoves.toCapturePositions()
         )

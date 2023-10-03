@@ -22,7 +22,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        //WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             val systemUiController = rememberSystemUiController()
@@ -42,9 +42,9 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.primaryVariant
+                    color = MaterialTheme.colors.primary
                 ) {
-                    ChessBoard(Board())
+                    ChessBoard()
                 }
             }
         }
@@ -56,6 +56,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DefaultPreview() {
     RuyChessTheme {
-        ChessBoard(Board())
+        ChessBoard()
     }
 }

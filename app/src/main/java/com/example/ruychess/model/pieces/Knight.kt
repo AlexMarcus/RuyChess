@@ -44,9 +44,7 @@ class Knight(override val color: PieceColor) : Piece() {
                                 MoveType.Capture
                             )
                         )
-
                     }
-
                 }
             }
         }

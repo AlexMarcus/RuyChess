@@ -24,8 +24,8 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,13 +40,12 @@ import com.example.ruychess.model.Square
 import com.example.ruychess.model.pieces.Piece
 import com.example.ruychess.model.pieces.Pieces
 import com.example.ruychess.toModifier
-import com.example.ruychess.ui.theme.DarkSquareColor
-import com.example.ruychess.ui.theme.LightSquareColor
 import com.example.ruychess.ui.theme.RuyChessTheme
+import com.example.ruychess.ui.theme.darkSquareColor
+import com.example.ruychess.ui.theme.lightSquareColor
 
 @Composable
 fun ChessBoard(
-    board: Board,
     viewModel: ChessViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
@@ -54,7 +53,6 @@ fun ChessBoard(
 
     val state by viewModel.gameState.collectAsState()
 
-    //println(state.clickedPosition)
     val positionClickEvent = remember(viewModel) {
         object : UiEvent<Position> {
             override fun onClick(clickedItem: Position) {
@@ -75,35 +73,39 @@ fun ChessBoard(
                 squareSize = squareSize,
                 isHighlighted = square.position in state.highlightedPositions,
                 isCapture = square.position in state.capturePositions,
-                clickedPosition = state.clickedPosition,
+                clickedPosition = state.selectedPosition,
                 uiEvent = positionClickEvent
             )
         }
-        Pieces(state.curBoard.pieces, squareSize)
+        Pieces(state.prevBoard, state.curBoard.pieces, squareSize)
     }
 }
 
 @Composable
 fun Pieces(
-    pieces: Pieces,
+    prevBoard: Board,
+    toPieces: Pieces,
     squareSize: Dp
 ) {
-    pieces.forEach { (position, piece) ->
+    toPieces.forEach { (toPosition, piece) ->
         key(piece) {
-            AnimatedPiece(position, piece, squareSize)
+            AnimatedPiece(prevBoard.findPosition(piece), toPosition, piece, squareSize)
         }
     }
 }
 
 @Composable
 fun AnimatedPiece(
-    position: Position,
+    fromPosition: Position?,
+    toPosition: Position,
     piece: Piece,
     squareSize: Dp
 ) {
-    val offset by animateOffsetAsState(
-        targetValue = position.toOffset(squareSize),
-        animationSpec = tween(200, easing = LinearEasing)
+    val offset by animateConstantSpeedOffsetAsState(
+        initialOffset = fromPosition?.toOffset(squareSize) ?: toPosition.toOffset(squareSize),
+        targetValue = toPosition.toOffset(squareSize),
+        velocity = 600f
+
     )
     Piece(piece = piece, squareSize = squareSize, modifier = offset.toModifier())
 }
@@ -148,7 +150,10 @@ fun Square(
     Box(
         modifier = modifier
             .size(size)
-            .background(if (position.isLight()) LightSquareColor else DarkSquareColor)
+            .background(
+                if (position.isLight()) MaterialTheme.colors.lightSquareColor
+                else MaterialTheme.colors.darkSquareColor
+            )
     ) {
         if (position.rank.ordinal == 0) {
             Text(
@@ -175,7 +180,7 @@ fun Square(
             Canvas(Modifier.fillMaxSize(),
                 onDraw = {
                     drawRect(
-                        color = Color.LightGray,
+                        color = Color.Gray,
                         alpha = 0.55f
                     )
                 }
@@ -189,7 +194,7 @@ fun Square(
                     .align(Alignment.Center),
                 onDraw = {
                     drawCircle(
-                        color = Color.LightGray,
+                        color = Color.Gray,
                         alpha = 0.65f
                     )
                 }
@@ -203,7 +208,7 @@ fun Square(
                     .align(Alignment.Center),
                 onDraw = {
                     drawCircle(
-                        color = Color.LightGray,
+                        color = Color.Gray,
                         alpha = 0.65f,
                         style = Stroke(this.size.minDimension / 8f)
                     )
@@ -232,14 +237,11 @@ fun Piece(
     }
 }
 
-
 @Preview
 @Composable
 fun BoardPreview() {
     RuyChessTheme {
-        ChessBoard(
-            Board()
-        )
+        ChessBoard()
     }
 }
 
