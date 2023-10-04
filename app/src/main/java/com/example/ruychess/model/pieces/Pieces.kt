@@ -16,5 +16,9 @@ data class Pieces(
     operator fun plus(entry: Pair<Position, Piece>): Pieces =
         Pieces(pieces.plus(entry))
 
+    fun get(pieceColor: PieceColor): Map<Position, Piece> = pieces.filter {
+        it.value.color == pieceColor
+    }
+
     override fun iterator(): Iterator<Map.Entry<Position, Piece>> = pieces.iterator()
 }
